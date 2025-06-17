@@ -22,7 +22,7 @@ pipeline {
             steps {
                 bat '''
                 call %VENV_PATH%\\Scripts\\activate.bat
-                python3 app.py
+                python app.py
                 
                 '''
             }
