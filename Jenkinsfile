@@ -22,8 +22,8 @@ pipeline {
             steps {
                 bat '''
                 call %VENV_PATH%\\Scripts\\activate.bat
-                start /b python app.py
-                timeout /t 5
+                python3 app.py
+                
                 '''
             }
         }
