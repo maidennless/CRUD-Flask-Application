@@ -2,43 +2,42 @@ pipeline {
     agent any
 
     environment {
-        VENV_DIR = 'venv'
+        VENV_PATH = "venv"
     }
 
     stages {
-        stage('Prepare Python Environment') {
+        stage('Clone & Setup') {
             steps {
-                echo 'Creating virtual environment...'
-                sh 'python3 -m venv $VENV_DIR'
-                echo 'Activating virtual environment and installing dependencies...'
-                sh '. $VENV_DIR/bin/activate && pip install -r requirements.txt'
+                bat '''
+                echo Current dir: %CD%
+                python -m venv %VENV_PATH%
+                call %VENV_PATH%\\Scripts\\activate.bat
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                '''
             }
         }
 
-        stage('Run Flask App') {
+        stage('Run App') {
             steps {
-                echo 'Running the Flask application...'
-                sh '''
-                . $VENV_DIR/bin/activate
-                export FLASK_APP=app.py
-                export FLASK_ENV=development
-                python3 app.py &
-                sleep 5
+                bat '''
+                call %VENV_PATH%\\Scripts\\activate.bat
+                start /b python app.py
+                timeout /t 5
                 '''
-                echo 'Flask app started!'
             }
         }
 
         stage('Test Endpoint') {
             steps {
-                echo 'Testing the homepage...'
-                sh 'curl -I http://localhost:5000 || true'
+                bat 'curl -I http://localhost:5000 || echo App might not be up'
             }
         }
     }
 
     post {
         always {
-            echo 'Cleaning up...'
-            sh 'pkill -f "python3 app.py" || true'
+            bat 'taskkill /F /IM python.exe || echo No process to kill'
         }
+    }
+}
